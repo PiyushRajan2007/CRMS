@@ -1,5 +1,6 @@
 package campus;
 
+// Inheritance and runtime polymorphism: Admin supplies its own User behaviour.
 public class Admin extends User {
   public Admin(String id, String name) {
     super(id, name);

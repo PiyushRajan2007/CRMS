@@ -1,5 +1,6 @@
 package campus;
 
+// Abstraction provides a shared resource base; private fields protect its state.
 public abstract class Resource implements Searchable {
   private final String id;
   private final String name;

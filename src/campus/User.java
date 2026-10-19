@@ -1,5 +1,6 @@
 package campus;
 
+// Abstract base class: common user data is encapsulated, while roles supply behaviour.
 public abstract class User {
   private final String id;
   private String name;

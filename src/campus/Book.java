@@ -1,5 +1,6 @@
 package campus;
 
+// Inheritance plus an interface let a book be handled as a generic resource.
 public class Book extends Resource implements Bookable {
   private final String author;
   private boolean available = true;

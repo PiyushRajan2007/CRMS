@@ -1,5 +1,6 @@
 package campus;
 
+// Multilevel inheritance: a Lab is a specialized Room and Resource.
 public class Lab extends Room {
   private final String equipment;
 

@@ -1,5 +1,6 @@
 package campus;
 
+// Inheritance and method overriding specialize the abstract User class.
 public class Faculty extends User {
   public Faculty(String id, String name) {
     super(id, name);

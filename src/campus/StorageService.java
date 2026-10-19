@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+// Encapsulation isolates file persistence from the rest of the application.
 public class StorageService {
   private final File directory = new File("data");
 

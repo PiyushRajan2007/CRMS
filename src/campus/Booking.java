@@ -3,6 +3,7 @@ package campus;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+// Encapsulation keeps booking state private; Details is a non-static inner class.
 public class Booking {
   private static int nextId = 1;
   private final String id;

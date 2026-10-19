@@ -1,5 +1,6 @@
 package campus;
 
+// A Room inherits Resource features and fulfills the Bookable contract.
 public class Room extends Resource implements Bookable {
   private final int capacity;
   private boolean available = true;

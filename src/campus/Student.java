@@ -1,5 +1,6 @@
 package campus;
 
+// Inheritance and overriding define student-specific booking rules.
 public class Student extends User {
   public Student(String id, String name) {
     super(id, name);

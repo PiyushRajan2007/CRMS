@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+// Encapsulation centralizes rules; synchronized methods make booking thread-safe.
 public class ResourceManager {
   private final University university;
   private final Map<String, User> users = new ConcurrentHashMap<>();

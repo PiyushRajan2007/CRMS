@@ -3,6 +3,7 @@ package campus;
 import java.util.ArrayList;
 import java.util.List;
 
+// Composition: University owns a collection of Resource objects.
 public class University {
   private final String name;
   private final List<Resource> resources = new ArrayList<>();

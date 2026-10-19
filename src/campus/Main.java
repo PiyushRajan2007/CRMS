@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
+// Composition: Main coordinates University, ResourceManager, and StorageService objects.
 public class Main {
   private final Scanner scanner = new Scanner(System.in);
   private final University university;
@@ -27,6 +28,14 @@ public class Main {
     }
     university = loadedUniversity;
     manager = loadedManager;
+  }
+
+  public University getUniversity() {
+    return university;
+  }
+
+  public ResourceManager getResourceManager() {
+    return manager;
   }
 
   private void addDefaults(University campus, ResourceManager resourceManager) {

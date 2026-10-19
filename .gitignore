@@ -1,3 +1,7 @@
 out/
 data/
 *.class
+node_modules/
+campus-ui/dist/
+.vscode/
+*.log
