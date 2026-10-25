@@ -1,4 +1,4 @@
-  # Campus Resource Management System
+# Campus Resource Management System
 
 Simple Java console project for CSC2104 OOP.
 
@@ -30,15 +30,6 @@ Open the local URL printed by Vite. Its development server proxies `/api` to `ht
 - `campus-ui/` is a Vite + React client; `src/api.js` owns its HTTP calls.
 - React Three Fiber renders the resources; panels and animations present API-backed interactions.
 - Vite proxies `/api` during development; `npm run build` creates the production UI bundle.
-
-## Run
-
-Requires Java 17+.
-
-```powershell
-javac -d out src\campus\*.java
-java -cp out campus.Main
-```
 
 Choose `1` to list resources, `2` to search, `3` to book, `4` to cancel, and `6` to save data in `data/`.
 
