@@ -27,8 +27,10 @@ public class StorageService {
         resources.write(resourceRecord(resource) + System.lineSeparator());
       for (Booking booking : manager.getBookings())
         bookings.write(booking.getId() + "|" + booking.getUser().getId() + "|" + booking.getResource().getId() + "|"
-            + booking.isActive() + "|" + booking.getCreatedAt() + System.lineSeparator());
-      logs.write("Saved at " + java.time.LocalDateTime.now() + System.lineSeparator());
+            + booking.isActive() + "|" + booking.getCreatedAt() + "|" + value(booking.getStartAt()) + "|"
+            + value(booking.getEndAt()) + "|" + value(booking.getDueAt()) + System.lineSeparator());
+      for (String entry : manager.getActivityLogger().entries())
+        logs.write(entry + System.lineSeparator());
     }
   }
 
@@ -74,21 +76,37 @@ public class StorageService {
       String line;
       while ((line = reader.readLine()) != null) {
         String[] parts = line.split("\\|", -1);
-        if (parts.length != 5)
+        if (parts.length != 5 && parts.length != 8)
           throw new IOException("Invalid booking record.");
         User user = manager.findUser(parts[1]);
         Resource resource = manager.findResource(parts[2]);
         if (resource == null)
           throw new IOException("Saved booking refers to an unknown resource.");
-        manager.addLoadedBooking(new Booking(parts[0], user, resource, Boolean.parseBoolean(parts[3]),
-            LocalDateTime.parse(parts[4])));
+        LocalDateTime created = LocalDateTime.parse(parts[4]);
+        LocalDateTime start = parts.length == 8 && !parts[5].equals("-") ? LocalDateTime.parse(parts[5]) : null;
+        LocalDateTime end = parts.length == 8 && !parts[6].equals("-") ? LocalDateTime.parse(parts[6]) : null;
+        LocalDateTime due = parts.length == 8 && !parts[7].equals("-") ? LocalDateTime.parse(parts[7])
+            : resource instanceof Book ? created.plusDays(7) : null;
+        manager.addLoadedBooking(new Booking(parts[0], user, resource, Boolean.parseBoolean(parts[3]), created,
+            start, end, due));
       }
     } catch (Exception exception) {
       if (exception instanceof IOException ioException)
         throw ioException;
       throw new IOException("Invalid booking record.", exception);
     }
+    File logFile = new File(directory, "logs.txt");
+    if (logFile.exists())
+      try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
+        java.util.List<String> saved = new java.util.ArrayList<>();
+        String line;
+        while ((line = reader.readLine()) != null)
+          saved.add(line);
+        manager.getActivityLogger().load(saved);
+      }
   }
+
+  private String value(LocalDateTime value) { return value == null ? "-" : value.toString(); }
 
   private String resourceRecord(Resource resource) {
     if (resource instanceof Lab lab)

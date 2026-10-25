@@ -36,7 +36,7 @@ export const api = {
   users: () => request("/users"),
   logs: () => request("/logs"),
   book: (userId, resourceId) => post("/book", { userId, resourceId }),
-  cancel: (bookingId) => post("/cancel", { bookingId }),
+  cancel: (userId, bookingId) => post("/cancel", { userId, bookingId }),
   save: () => post("/save"),
   demoConcurrency: () => post("/demo-concurrency"),
 };

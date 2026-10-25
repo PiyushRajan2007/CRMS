@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.time.LocalDateTime;
 
 // Encapsulation centralizes rules; synchronized methods make booking thread-safe.
 public class ResourceManager {
   private final University university;
   private final Map<String, User> users = new ConcurrentHashMap<>();
   private final List<Booking> bookings = new ArrayList<>();
+  private final ActivityLogger activityLogger = new ActivityLogger();
 
   public ResourceManager(University university) {
     this.university = university;
@@ -41,34 +43,34 @@ public class ResourceManager {
   }
 
   public synchronized Booking bookRoom(User user, Room room) throws RoomNotAvailableException, InvalidUserException {
+    return bookResource(user, room, LocalDateTime.now(), LocalDateTime.now().plusHours(1));
+  }
+
+  public synchronized Booking bookResource(User user, Resource resource, LocalDateTime startAt, LocalDateTime endAt)
+      throws RoomNotAvailableException, InvalidUserException {
     validateUser(user);
-    validateResource(room);
-    checkPermission(user, room);
-    if (!room.isAvailable())
-      throw new RoomNotAvailableException(room.getName() + " is already booked.");
+    validateResource(resource);
+    checkPermission(user, resource);
+    if (startAt == null || endAt == null || !endAt.isAfter(startAt))
+      throw rejected("Booking end time must be after its start time.");
+    if (!(resource instanceof BookableResource bookable))
+      throw rejectedAvailability("This resource cannot be booked.");
+    for (Booking existing : bookings)
+      if (existing.isActive() && existing.getResource().equals(resource) && existing.overlaps(startAt, endAt))
+        throw rejectedAvailability(resource.getName() + " is already booked for that time slot.");
     if (activeBookings(user).size() >= user.getBookingLimit())
-      throw new InvalidUserException("Booking limit reached for " + user.getName());
-    room.setAvailable(false);
-    Booking booking = new Booking(user, room);
+      throw rejected("Booking limit reached for " + user.getName());
+    bookable.setAvailable(false);
+    Booking booking = new Booking(user, resource, startAt, endAt);
     bookings.add(booking);
+    activityLogger.log("BOOKING", user.getId() + " booked " + resource.getId());
     return booking;
   }
 
   public synchronized Booking bookResource(User user, Resource resource)
       throws RoomNotAvailableException, InvalidUserException {
-    validateUser(user);
-    validateResource(resource);
-    checkPermission(user, resource);
-    if (!(resource instanceof Bookable bookable))
-      throw new RoomNotAvailableException("This resource cannot be booked.");
-    if (!bookable.isAvailable())
-      throw new RoomNotAvailableException(resource.getName() + " is already unavailable.");
-    if (activeBookings(user).size() >= user.getBookingLimit())
-      throw new InvalidUserException("Booking limit reached for " + user.getName());
-    bookable.setAvailable(false);
-    Booking booking = new Booking(user, resource);
-    bookings.add(booking);
-    return booking;
+    LocalDateTime start = LocalDateTime.now();
+    return bookResource(user, resource, start, resource instanceof Book ? start.plusDays(7) : start.plusHours(1));
   }
 
   public synchronized Booking waitForRoom(User user, Room room)
@@ -86,11 +88,12 @@ public class ResourceManager {
     for (Booking booking : bookings) {
       if (booking.getId().equalsIgnoreCase(bookingId) && booking.isActive()) {
         if (!(requester instanceof Admin) && !booking.getUser().getId().equalsIgnoreCase(requester.getId()))
-          throw new InvalidUserException("You can cancel only your own bookings.");
+          throw rejected("You can cancel only your own bookings.");
         booking.close();
         if (booking.getResource() instanceof Bookable bookable)
           bookable.setAvailable(true);
         notifyAll();
+        activityLogger.log("CANCELLATION", requester.getId() + " cancelled " + bookingId);
         return;
       }
     }
@@ -134,6 +137,20 @@ public class ResourceManager {
     return List.copyOf(users.values());
   }
 
+  public ActivityLogger getActivityLogger() { return activityLogger; }
+
+  private InvalidUserException rejected(String message) {
+    activityLogger.log("REJECTED", message);
+    if (message.contains("already") || message.contains("cannot be booked"))
+      return new InvalidUserException(message);
+    return new InvalidUserException(message);
+  }
+
+  private RoomNotAvailableException rejectedAvailability(String message) {
+    activityLogger.log("REJECTED", message);
+    return new RoomNotAvailableException(message);
+  }
+
   private List<Booking> activeBookings(User user) {
     List<Booking> result = new ArrayList<>();
     for (Booking booking : bookings)
@@ -143,8 +160,10 @@ public class ResourceManager {
   }
 
   private void validateUser(User user) throws InvalidUserException {
-    if (user == null || user.getId() == null || !users.containsKey(user.getId().toUpperCase()))
+    if (user == null || user.getId() == null || !users.containsKey(user.getId().toUpperCase())) {
+      activityLogger.log("REJECTED", "unregistered user operation");
       throw new InvalidUserException("User is not registered.");
+    }
   }
 
   private void validateResource(Resource resource) throws RoomNotAvailableException {
@@ -153,9 +172,11 @@ public class ResourceManager {
   }
 
   private void checkPermission(User user, Resource resource) throws InvalidUserException {
-    if (!user.canBook(resource))
+    if (!user.canBook(resource)) {
+      activityLogger.log("REJECTED", user.getId() + " cannot book " + resource.getId());
       throw new InvalidUserException(user.getClass().getSimpleName() + " cannot book "
           + resource.getClass().getSimpleName() + " resources.");
+    }
   }
 
   public synchronized void addLoadedBooking(Booking booking) throws RoomNotAvailableException {

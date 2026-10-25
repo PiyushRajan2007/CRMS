@@ -30,6 +30,20 @@ public abstract class User {
 
   public abstract boolean canBook(Resource resource);
 
+  public Role getRole() {
+    return Role.valueOf(getClass().getSimpleName().toUpperCase());
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof User user && id.equalsIgnoreCase(user.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return id.toUpperCase().hashCode();
+  }
+
   @Override
   public String toString() {
     return id + " - " + name + " (" + getClass().getSimpleName() + ")";

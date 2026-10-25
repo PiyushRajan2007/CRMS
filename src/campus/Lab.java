@@ -14,6 +14,11 @@ public class Lab extends Room {
   }
 
   @Override
+  public ResourceType getResourceType() {
+    return ResourceType.LAB;
+  }
+
+  @Override
   public String toString() {
     return super.toString() + " | equipment=" + equipment;
   }

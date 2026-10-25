@@ -26,6 +26,20 @@ public abstract class Resource implements Searchable {
     return category;
   }
 
+  public ResourceType getResourceType() {
+    return ResourceType.valueOf(category.toUpperCase());
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof Resource resource && id.equalsIgnoreCase(resource.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return id.toUpperCase().hashCode();
+  }
+
   @Override
   public boolean matches(String query) {
     if (query == null)

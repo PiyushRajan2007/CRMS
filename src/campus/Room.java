@@ -1,9 +1,8 @@
 package campus;
 
 // A Room inherits Resource features and fulfills the Bookable contract.
-public class Room extends Resource implements Bookable {
+public class Room extends BookableResource {
   private final int capacity;
-  private boolean available = true;
 
   public Room(String id, String name, int capacity) {
     super(id, name, "Room");
@@ -17,17 +16,7 @@ public class Room extends Resource implements Bookable {
   }
 
   @Override
-  public boolean isAvailable() {
-    return available;
-  }
-
-  @Override
-  public void setAvailable(boolean available) {
-    this.available = available;
-  }
-
-  @Override
   public String toString() {
-    return super.toString() + " | capacity=" + capacity + " | " + (available ? "available" : "booked");
+    return super.toString() + " | capacity=" + capacity + " | " + (isAvailable() ? "available" : "booked");
   }
 }

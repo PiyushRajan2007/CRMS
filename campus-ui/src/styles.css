@@ -66,6 +66,8 @@ h1 em, .intro-content h1 em { color: var(--teal); font-style: normal; }
 .large-resource-icon.available { color: #52eab3; background: #52eab30d; box-shadow: 0 0 36px #52eab324, inset 0 0 30px #52eab311; }.large-resource-icon.booked { color: #ff6681; background: #ff66810d; box-shadow: 0 0 36px #ff668122, inset 0 0 30px #ff668111; }
 .resource-type { font: 9px "DM Mono", monospace; color: var(--teal); text-transform: uppercase; letter-spacing: .13em; }
 .resource-panel h2 { font-size: 23px; letter-spacing: -.04em; margin: 7px 0; line-height: 1.15; }
+.resource-details { display: grid; gap: 5px; margin-top: 12px; color: #73858d; font: 8px "DM Mono", monospace; letter-spacing: .06em; }
+.resource-details strong { color: #d9ebe8; font-weight: 500; letter-spacing: 0; }
 .resource-id { font-size: 8px; color: #7d8993; letter-spacing: .1em; }
 .availability { display: inline-flex; align-items: center; gap: 7px; margin-top: 19px; font-size: 8px; letter-spacing: .07em; }.availability span { width: 5px; height: 5px; border-radius: 50%; }.is-available { color: #70e8b9; }.is-available span { background: #54e9a7; box-shadow: 0 0 8px #54e9a7; }.is-booked { color: #ff8295; }.is-booked span { background: #ff5e7b; }
 .panel-divider { height: 1px; background: var(--line); margin: 18px 0; }

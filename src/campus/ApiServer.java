@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
+
 
 public class ApiServer {
   private final University university;
@@ -83,8 +83,8 @@ public class ApiServer {
     if ("POST".equalsIgnoreCase(method)) {
       Map<String, String> body = readJsonObject(exchange);
       return switch (path) {
-        case "/api/book" -> book(required(body, "userId"), required(body, "resourceId"));
-        case "/api/cancel" -> cancel(required(body, "bookingId"));
+        case "/api/book" -> book(required(body, "userId"), required(body, "resourceId"), body.get("startAt"), body.get("endAt"));
+        case "/api/cancel" -> cancel(required(body, "userId"), required(body, "bookingId"));
         case "/api/save" -> save();
         case "/api/demo-concurrency" -> demoConcurrency();
         default -> throw new IllegalArgumentException("Unknown endpoint: " + path);
@@ -102,35 +102,43 @@ public class ApiServer {
       item.put("name", resource.getName());
       item.put("type", resource.getClass().getSimpleName());
       item.put("available", resource instanceof Bookable bookable && bookable.isAvailable());
+      if (resource instanceof Room room)
+        item.put("capacity", room.getCapacity());
+      if (resource instanceof Lab lab)
+        item.put("equipment", lab.getEquipment());
+      if (resource instanceof Book book)
+        item.put("author", book.getAuthor());
       result.add(item);
     }
     return result;
   }
 
-  private Object book(String userId, String resourceId) throws Exception {
+  private Object book(String userId, String resourceId, String startText, String endText) throws Exception {
     User user = manager.findUser(userId);
     Resource resource = manager.findResource(resourceId);
-    Booking booking = manager.bookResource(user, resource);
+    Booking booking;
+    if (startText == null && endText == null) {
+      booking = manager.bookResource(user, resource);
+    } else {
+      if (startText == null || endText == null)
+        throw new IllegalArgumentException("Both startAt and endAt are required for a time-slot booking.");
+      booking = manager.bookResource(user, resource, LocalDateTime.parse(startText), LocalDateTime.parse(endText));
+    }
     Map<String, Object> result = new LinkedHashMap<>();
     result.put("ok", true);
     result.put("bookingId", booking.getId());
     result.put("userId", booking.getUser().getId());
     result.put("resourceId", booking.getResource().getId());
     result.put("active", booking.isActive());
+    result.put("startAt", booking.getStartAt().toString());
+    result.put("endAt", booking.getEndAt().toString());
+    if (booking.getDueAt() != null)
+      result.put("dueAt", booking.getDueAt().toString());
     return result;
   }
 
-  private Object cancel(String bookingId) throws Exception {
-    List<Booking> allBookings = manager.getBookings();
-    for (Booking booking : allBookings) {
-      if (booking.getId().equalsIgnoreCase(bookingId)) {
-        manager.cancelBooking(booking.getUser(), bookingId);
-        return Map.of("ok", true, "bookingId", bookingId, "cancelled", true);
-      }
-    }
-    if (allBookings.isEmpty())
-      throw new BookingNotFoundException("Active booking not found: " + bookingId);
-    manager.cancelBooking(allBookings.get(0).getUser(), bookingId);
+  private Object cancel(String userId, String bookingId) throws Exception {
+    manager.cancelBooking(manager.findUser(userId), bookingId);
     return Map.of("ok", true, "bookingId", bookingId, "cancelled", true);
   }
 
@@ -143,6 +151,10 @@ public class ApiServer {
       item.put("resourceId", booking.getResource().getId());
       item.put("active", booking.isActive());
       item.put("createdAt", booking.getCreatedAt().toString());
+      item.put("startAt", booking.getStartAt() == null ? null : booking.getStartAt().toString());
+      item.put("endAt", booking.getEndAt() == null ? null : booking.getEndAt().toString());
+      item.put("dueAt", booking.getDueAt() == null ? null : booking.getDueAt().toString());
+      item.put("fine", booking.getFine());
       result.add(item);
     }
     return result;

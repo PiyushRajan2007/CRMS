@@ -25,6 +25,11 @@ function ResourcePanel({ resource, booking, user, onBook, onCancel, onClose, bus
       <span className="resource-type">{resource.type}</span>
       <h2>{resource.name}</h2>
       <div className="resource-id">ASSET · {resource.id}</div>
+      <div className="resource-details">
+        {resource.capacity && <span>CAPACITY <strong>{resource.capacity}</strong></span>}
+        {resource.equipment && <span>EQUIPMENT <strong>{resource.equipment}</strong></span>}
+        {resource.author && <span>AUTHOR <strong>{resource.author}</strong></span>}
+      </div>
       <div className={`availability ${resource.available ? "is-available" : "is-booked"}`}>
         <span />{resource.available ? "AVAILABLE NOW" : "CURRENTLY BOOKED"}
       </div>
@@ -197,7 +202,7 @@ export default function App() {
   async function cancel(bookingId) {
     setBusyId(bookingId);
     try {
-      await api.cancel(bookingId);
+      await api.cancel(selectedUser?.id, bookingId);
       pushToast({ message: `${bookingId} has been cancelled.` }, "Booking cancelled");
       await refresh();
     } catch (error) {

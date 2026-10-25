@@ -1,9 +1,8 @@
 package campus;
 
 // Inheritance plus an interface let a book be handled as a generic resource.
-public class Book extends Resource implements Bookable {
+public class Book extends BookableResource {
   private final String author;
-  private boolean available = true;
 
   public Book(String id, String name, String author) {
     super(id, name, "Book");
@@ -15,17 +14,7 @@ public class Book extends Resource implements Bookable {
   }
 
   @Override
-  public boolean isAvailable() {
-    return available;
-  }
-
-  @Override
-  public void setAvailable(boolean available) {
-    this.available = available;
-  }
-
-  @Override
   public String toString() {
-    return super.toString() + " | author=" + author + " | " + (available ? "available" : "borrowed");
+    return super.toString() + " | author=" + author + " | " + (isAvailable() ? "available" : "borrowed");
   }
 }

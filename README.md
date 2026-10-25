@@ -31,6 +31,34 @@ Open the local URL printed by Vite. Its development server proxies `/api` to `ht
 - React Three Fiber renders the resources; panels and animations present API-backed interactions.
 - Vite proxies `/api` during development; `npm run build` creates the production UI bundle.
 
+## Current features
+
+- Java `Role` and `ResourceType` enums plus a shared abstract `BookableResource` base.
+- ID-based equality for users/resources and synchronized booking/cancellation rules.
+- Ownership-protected cancellation: only the booking owner or an Admin can cancel.
+- Resource details (room capacity, lab equipment, and book author) in the API and UI.
+- Timestamped booking, cancellation, and rejected-operation activity logs.
+- Optional ISO-8601 time slots with overlap checks; books receive a seven-day loan period.
+- Overdue book fines are calculated at ₹5/day for Students, ₹2/day for Faculty, and ₹0/day for Admins.
+- Legacy five-column booking files remain readable; new saves append slot/loan fields.
+
+## Tests
+
+Production Java sources compile with:
+
+```powershell
+javac -d out src\campus\*.java
+```
+
+JUnit 5 tests are in `test/campus/ResourceManagerTest.java`. The repository does not vendor a JUnit runner or dependency manager; run them with a JUnit 5 console standalone jar on the classpath, for example:
+
+```powershell
+javac -cp junit-platform-console-standalone.jar -d out src\campus\*.java test\campus\ResourceManagerTest.java
+java -jar junit-platform-console-standalone.jar --class-path out --scan-class-path
+```
+
+The frontend production bundle is built with `npm.cmd run build` from `campus-ui/`.
+
 Choose `1` to list resources, `2` to search, `3` to book, `4` to cancel, and `6` to save data in `data/`.
 
 Option `8` demonstrates synchronized booking with two threads.
